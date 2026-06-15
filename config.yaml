@@ -1,0 +1,55 @@
+# ============================================================
+#  P-POCR 配置文件 — PaddleOCR-VL PDF → Markdown 转换工具
+# ============================================================
+#  用法:
+#    1. 直接修改本文件中的默认值
+#    2. 或复制为 my_config.yaml 后通过 --config my_config.yaml 指定
+#    3. 命令行参数优先级 > 配置文件 > 内置默认值
+# ============================================================
+
+# ---------- API 设置 ----------
+api:
+  # PaddleOCR API 地址
+  job_url: "https://paddleocr.aistudio-app.com/api/v2/ocr/jobs"
+  # API Token (请替换为你自己的)
+  token: "YOUR_AISTUDIO_TOKEN"
+  # 识别模型
+  model: "PaddleOCR-VL-1.6"
+
+# ---------- 识别选项 ----------
+options:
+  # 是否启用文档方向分类
+  use_doc_orientation_classify: false
+  # 是否启用文档矫正
+  use_doc_unwarping: false
+  # 是否启用图表识别
+  use_chart_recognition: false
+
+# ---------- 输出设置 ----------
+output:
+  # 输出根目录 (每个 PDF 会在其下创建同名子目录)
+  dir: "output"
+  # 是否下载 markdown 中引用的图片
+  download_md_images: true
+  # 是否下载 outputImages (页面渲染图等)
+  download_output_images: true
+
+# ---------- 轮询设置 ----------
+polling:
+  # 轮询间隔 (秒)
+  interval: 5
+  # 最大等待时间 (秒), 0 表示无限等待
+  timeout: 0
+
+# ---------- 批处理设置 ----------
+batch:
+  # 是否递归扫描子目录中的 PDF
+  recursive: false
+  # 支持的文件扩展名
+  extensions:
+    - ".pdf"
+    - ".png"
+    - ".jpg"
+    - ".jpeg"
+    - ".tiff"
+    - ".bmp"
