@@ -11,7 +11,7 @@
 api:
   # PaddleOCR API 地址
   job_url: "https://paddleocr.aistudio-app.com/api/v2/ocr/jobs"
-  # API Token (请替换为你自己的)
+  # API Token: 推荐通过环境变量 PADDLEOCR_API_TOKEN 注入, 或用 --token 参数传入
   token: "YOUR_AISTUDIO_TOKEN"
   # 识别模型
   model: "PaddleOCR-VL-1.6"

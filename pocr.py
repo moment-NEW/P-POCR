@@ -60,12 +60,17 @@ class Config:
     def __init__(self, config_path: Optional[str] = None):
         """初始化配置"""
         self.config = self.DEFAULT_CONFIG.copy()
-        
+
         # 加载配置文件
         if config_path and os.path.exists(config_path):
             with open(config_path, 'r', encoding='utf-8') as f:
                 file_config = yaml.safe_load(f)
                 self._merge_config(file_config)
+
+        # 环境变量注入 token (优先于配置文件), 避免 token 进入版本库
+        env_token = os.environ.get("PADDLEOCR_API_TOKEN")
+        if env_token:
+            self.config["api"]["token"] = env_token
     
     def _merge_config(self, file_config: Dict[str, Any]):
         """合并配置文件"""
