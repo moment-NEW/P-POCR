@@ -11,6 +11,7 @@
 - ⚙️ **灵活配置** - YAML 配置文件 + 命令行参数，支持高级定制
 - 🎯 **URL 支持** - 直接处理网络文件 URL
 - 📊 **进度显示** - 实时显示处理进度和状态
+- 🎬 **视频字幕 OCR** - ffmpeg 抽帧 + 裁切底部画面 + PaddleOCR，自动生成 SRT 字幕
 
 ## 📦 安装
 
@@ -49,6 +50,71 @@ python pocr.py ./documents/
 ```bash
 python pocr.py https://example.com/document.pdf
 ```
+
+## 🎬 视频字幕 OCR (video_ocr.py)
+
+把视频自动转成字幕文件：**ffmpeg 按帧率抽帧 → 裁切画面下半部分 → 三级去重省 API → PaddleOCR API 识别 → 按时间轴合并生成 SRT**。
+
+三级去重/预筛（都为零成本或本地成本）：
+
+1. **条带去重**：只在字幕所在的底部窄带（默认底部 15%）判断画面是否变化，背景运动不影响
+2. **本地文字检测**（推荐安装 `rapidocr-onnxruntime`）：检测不到文字的帧直接跳过，不调 API
+3. **内容 md5 缓存**：相同画面内容永不重复调用，中断重跑自动续
+
+依赖：本机需安装 [ffmpeg](https://www.gyan.dev/ffmpeg/builds/) 并加入 PATH（`ffprobe` 随附）；可选 `pip install rapidocr-onnxruntime` 启用本地预筛。
+
+### 基本用法
+
+```bash
+# 整个视频转字幕 (默认: 2fps 抽帧, 裁下半部分, PP-OCRv5 模型)
+python video_ocr.py video.mp4
+
+# 批量处理目录下所有视频
+python video_ocr.py ./Videos/
+```
+
+### 常用选项
+
+| 选项 | 说明 | 默认值 |
+|------|------|--------|
+| `--crop-bottom` | 裁取画面底部比例，`0.5` = 下半部分 | `0.5` |
+| `--fps` | 每秒抽帧数，越高时间轴越准、调 API 越多 | `2` |
+| `--model` | 识别模型 | `PP-OCRv5` |
+| `--dedup-strip` | 去重检测条带高度（画面底部比例） | `0.15` |
+| `--merge-similarity` | 相邻字幕相似度 ≥ 该值合并为一条（抗淡入淡出抖动） | `0.7` |
+| `--no-local-det` | 关闭本地文字检测预筛 | 开 |
+| `--frames-only` | 只抽帧裁切不调 API，用于确认裁切区域 | 关 |
+| `--start` / `--duration` | 只处理某一段（起始秒 / 时长秒） | 整个视频 |
+| `--workers` / `--batch` | 并发请求数 / 每批任务数 | `6` / `12` |
+| `--no-dedup` | 不去重，保留所有抽帧 | 自动去重 |
+| `--min-score` | 文本置信度阈值，低于则丢弃 | `0.3` |
+
+### 推荐流程
+
+```bash
+# 1. 先只抽帧, 检查裁切区域是否罩住字幕
+python video_ocr.py video.mp4 --frames-only
+
+# 2. 用前 60 秒快速验证识别效果
+python video_ocr.py video.mp4 --duration 60
+
+# 3. 确认无误后跑完整视频
+python video_ocr.py video.mp4
+```
+
+### 输出结构
+
+```
+output/
+└── video/
+    ├── frames/            # 裁切后的帧 (缓存, 保留则重跑不重复调 API)
+    ├── ocr_cache.json     # 识别结果缓存 (中断后重跑自动续)
+    ├── video.srt          # 字幕文件 (可直接导入播放器)
+    ├── video.txt          # 纯文本字幕 (每条一行)
+    └── video_timed.txt    # 带时间戳的文本 ([00:01:23] 字幕内容)
+```
+
+> 💡 去重 + 本地预筛 + 缓存三保险：字幕没变化的帧、没有文字的帧都不会调用 API，中断后重跑只补未完成的部分。
 
 ## 📖 使用方法
 

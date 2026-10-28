@@ -1,0 +1,9 @@
+# 生成产物
+output/
+__pycache__/
+
+# 待处理视频 (过大, 不进版本库)
+Videos/
+
+# 本地工具缓存
+.fastcontext/

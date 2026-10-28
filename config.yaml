@@ -53,3 +53,30 @@ batch:
     - ".jpeg"
     - ".tiff"
     - ".bmp"
+
+# ---------- 视频字幕 OCR 设置 (video_ocr.py) ----------
+video:
+  # 每秒抽帧数 (越高时间轴越准, 但调 API 越多)
+  fps: 2
+  # 裁取画面底部比例, 0.5 = 下半部分
+  crop_bottom: 0.5
+  # 字幕识别模型 (PP-OCRv5 纯文字识别, 快且省; PaddleOCR-VL-1.6 为文档解析)
+  model: "PP-OCRv5"
+  # 并发请求数
+  workers: 4
+  # 每批提交的任务数
+  batch: 8
+  # 轮询间隔 (秒)
+  interval: 2
+  # 单帧任务超时 (秒)
+  timeout: 300
+  # 文本置信度阈值 (低于此值的识别结果丢弃)
+  min_score: 0.3
+  # 是否做条带去重 (只在字幕区判断画面变化, 背景运动不影响)
+  dedup: true
+  # 去重检测条带高度: 画面底部比例
+  dedup_strip: 0.15
+  # 相邻字幕文本相似度 >= 此值时合并为一条 (0 关闭)
+  merge_similarity: 0.7
+  # 本地文字检测预筛: 检测不到文字的帧不调 API (需 rapidocr-onnxruntime)
+  local_det: true
